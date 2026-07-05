@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Locked Out! Sam's First Day in Sydney | EAL Escape Room</title>
+<style>
+  :root {
+    --navy: #1f3864;
+    --navy-dark: #16294a;
+    --teal: #17868a;
+    --teal-light: #e2f2f2;
+    --amber: #f0a500;
+    --amber-light: #fdf1d6;
+    --paper: #f7f8fa;
+    --ink: #222833;
+    --good: #2e7d32;
+    --good-light: #e3f2e4;
+    --bad: #c62828;
+    --bad-light: #fbe4e4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, "Segoe UI", Arial, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 18px;
+    line-height: 1.5;
+  }
+  header {
+    background: var(--navy);
+    color: #fff;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  }
+  header h1 { font-size: 1.25rem; letter-spacing: 0.02em; }
+  header .team { font-size: 0.95rem; color: #cfe0f5; }
+  .timer {
+    background: var(--amber);
+    color: var(--navy-dark);
+    font-weight: bold;
+    font-size: 1.4rem;
+    padding: 6px 18px;
+    border-radius: 10px;
+    letter-spacing: 0.06em;
+    min-width: 130px;
+    text-align: center;
+  }
+  .timer.warning { background: var(--bad); color: #fff; animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity: 0.6; } }
+  .progress-track {
+    display: flex;
+    gap: 6px;
+    padding: 10px 20px;
+    background: var(--navy-dark);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .progress-step {
+    color: #8fa5c4;
+    background: rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 4px 12px;
+    font-size: 0.85rem;
+  }
+  .progress-step.done { background: var(--good); color: #fff; }
+  .progress-step.active { background: var(--amber); color: var(--navy-dark); font-weight: bold; }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 80px; }
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 3px 14px rgba(31,56,100,0.12);
+    padding: 26px;
+    margin-bottom: 22px;
+    border-top: 6px solid var(--teal);
+  }
+  .card h2 { color: var(--navy); font-size: 1.5rem; margin-bottom: 6px; }
+  .card h3 { color: var(--teal); font-size: 1.15rem; margin: 18px 0 8px; }
+  .room-tag {
+    display: inline-block;
+    background: var(--teal);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: bold;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 12px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .story {
+    background: var(--teal-light);
+    border-left: 5px solid var(--teal);
+    padding: 14px 16px;
+    border-radius: 0 10px 10px 0;
+    margin: 14px 0;
+    font-style: italic;
+  }
+  .speak-task {
+    background: var(--amber-light);
+    border-left: 5px solid var(--amber);
+    padding: 14px 16px;
+    border-radius: 0 10px 10px 0;
+    margin: 14px 0;
+  }
+  .speak-task .label {
+    font-weight: bold;
+    color: var(--navy);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    display: block;
+    margin-bottom: 6px;
+  }
+  button {
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 22px;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  button:active { transform: scale(0.97); }
+  .btn-primary { background: var(--navy); color: #fff; font-weight: bold; }
+  .btn-primary:hover { box-shadow: 0 3px 10px rgba(31,56,100,0.35); }
+  .btn-amber { background: var(--amber); color: var(--navy-dark); font-weight: bold; }
+  .btn-ghost { background: #e8ebf1; color: var(--navy); }
+  .btn-hint { background: #fff; border: 2px dashed var(--amber); color: var(--navy); font-size: 0.9rem; }
+  .lock-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+  .lock-row input {
+    font-family: inherit;
+    font-size: 1.3rem;
+    letter-spacing: 0.15em;
+    padding: 10px 14px;
+    border: 2px solid var(--navy);
+    border-radius: 10px;
+    width: 190px;
+    text-transform: uppercase;
+  }
+  .lock-row input:focus { outline: 3px solid var(--amber); }
+  .feedback { margin-top: 10px; font-weight: bold; min-height: 26px; }
+  .feedback.good { color: var(--good); }
+  .feedback.bad { color: var(--bad); }
+  .hidden { display: none !important; }
+  /* Matching game */
+  .match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  @media (max-width: 640px) { .match-grid { grid-template-columns: 1fr; } }
+  .match-col { display: flex; flex-direction: column; gap: 8px; }
+  .match-item {
+    background: #eef1f6;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 0.98rem;
+    text-align: left;
+  }
+  .match-item.selected { border-color: var(--amber); background: var(--amber-light); }
+  .match-item.matched { background: var(--good-light); border-color: var(--good); color: var(--good); cursor: default; }
+  .match-item.matched .digit {
+    background: var(--navy);
+    color: var(--amber);
+    font-weight: bold;
+    border-radius: 6px;
+    padding: 1px 8px;
+    margin-left: 6px;
+  }
+  .match-item.wrongflash { background: var(--bad-light); border-color: var(--bad); }
+  /* Dialogue ordering */
+  .dlg-pool, .dlg-built { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .dlg-line {
+    background: #eef1f6;
+    border-radius: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    font-size: 0.98rem;
+  }
+  .dlg-line:hover { border-color: var(--teal); }
+  .dlg-built .dlg-line { background: var(--good-light); border-color: var(--good); cursor: default; }
+  .dlg-built .num {
+    display: inline-block;
+    background: var(--good);
+    color: #fff;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    text-align: center;
+    line-height: 26px;
+    margin-right: 8px;
+    font-size: 0.85rem;
+    font-weight: bold;
+  }
+  /* Gap fill */
+  .wordbank { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+  .bank-chip {
+    background: var(--navy);
+    color: #fff;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 0.95rem;
+  }
+  .bank-chip.used { background: #c3c9d4; text-decoration: line-through; }
+  .gap-item { margin: 12px 0; padding: 12px; background: #eef1f6; border-radius: 10px; }
+  .gap-item select {
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 2px solid var(--navy);
+    margin: 0 4px;
+    max-width: 100%;
+  }
+  .gap-item.correct { background: var(--good-light); }
+  .gap-item.correct .letter-reveal {
+    display: inline-block;
+    background: var(--amber);
+    color: var(--navy-dark);
+    font-weight: bold;
+    font-size: 1.2rem;
+    border-radius: 8px;
+    padding: 2px 12px;
+    margin-left: 10px;
+  }
+  /* Info gap */
+  .agent-card {
+    background: var(--navy);
+    color: #fff;
+    border-radius: 14px;
+    padding: 20px;
+    margin: 14px 0;
+    border: 4px solid var(--amber);
+  }
+  .agent-card h4 { color: var(--amber); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.9rem; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+  .form-field label { font-weight: bold; color: var(--navy); display: block; margin-bottom: 4px; font-size: 0.95rem; }
+  .form-field select, .form-field input {
+    width: 100%;
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 2px solid var(--navy);
+  }
+  /* Hotspot scene */
+  .scene-wrap { position: relative; margin: 14px 0; }
+  .scene-wrap svg { width: 100%; height: auto; border-radius: 12px; display: block; }
+  .hotspot { cursor: pointer; }
+  .hotspot circle { fill: var(--amber); stroke: var(--navy); stroke-width: 3; animation: glow 1.6s infinite; }
+  .hotspot.found circle { fill: var(--good); animation: none; }
+  .hotspot text { font-size: 20px; font-weight: bold; fill: var(--navy-dark); pointer-events: none; }
+  .hotspot.found text { fill: #fff; }
+  @keyframes glow { 50% { opacity: 0.55; } }
+  .token-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  .token {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: #e0e4ec; color: #9aa3b5;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 1.2rem;
+    border: 3px solid #c7cdd9;
+  }
+  .token.earned { background: var(--amber); color: var(--navy-dark); border-color: var(--navy); }
+  /* Modal */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(22,41,74,0.75);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; padding: 16px;
+  }
+  .modal {
+    background: #fff; border-radius: 16px; padding: 26px;
+    max-width: 560px; width: 100%;
+    border-top: 8px solid var(--amber);
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal h3 { color: var(--navy); margin-bottom: 10px; }
+  .mcq-opt {
+    display: block; width: 100%; text-align: left;
+    background: #eef1f6; margin: 8px 0; padding: 12px 14px;
+    border-radius: 10px; border: 2px solid transparent; font-size: 1rem;
+  }
+  .mcq-opt:hover { border-color: var(--teal); }
+  .mcq-opt.right { background: var(--good-light); border-color: var(--good); }
+  .mcq-opt.wrong { background: var(--bad-light); border-color: var(--bad); }
+  /* Checklist */
+  .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+  @media (max-width: 640px) { .check-grid { grid-template-columns: 1fr; } }
+  .check-item {
+    display: flex; align-items: center; gap: 8px;
+    background: #eef1f6; border-radius: 8px; padding: 8px 12px; font-size: 0.95rem;
+  }
+  .check-item input { width: 20px; height: 20px; accent-color: var(--teal); }
+  /* Phrasebook */
+  .phrasebook-btn {
+    position: fixed; bottom: 18px; right: 18px;
+    background: var(--teal); color: #fff;
+    border-radius: 30px; padding: 12px 20px;
+    font-weight: bold; box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    z-index: 60;
+  }
+  .phrase-row { padding: 8px 0; border-bottom: 1px solid #e3e7ee; font-size: 0.95rem; }
+  .phrase-row b { color: var(--teal); }
+  /* Victory */
+  .victory {
+    text-align: center;
+    background: linear-gradient(160deg, var(--navy), var(--teal));
+    color: #fff;
+    border-radius: 16px;
+    padding: 40px 24px;
+  }
+  .victory h2 { color: var(--amber); font-size: 2rem; margin-bottom: 10px; }
+  .victory .bigtime { font-size: 2.6rem; font-weight: bold; color: #fff; margin: 14px 0; letter-spacing: 0.06em; }
+  .debrief { text-align: left; background: rgba(255,255,255,0.12); border-radius: 12px; padding: 18px; margin-top: 20px; }
+  .debrief li { margin: 8px 0 8px 20px; }
+  .shake { animation: shake 0.4s; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔐 Locked Out! Sam's First Day in Sydney</h1>
+  <div class="team" id="teamLabel"></div>
+  <div class="timer" id="timer">2:00:00</div>
+</header>
+
+<div class="progress-track" id="progressTrack">
+  <span class="progress-step" data-step="0">Start</span>
+  <span class="progress-step" data-step="1">1. Campus Gate</span>
+  <span class="progress-step" data-step="2">2. Reception</span>
+  <span class="progress-step" data-step="3">3. Share House</span>
+  <span class="progress-step" data-step="4">4. Phone Call</span>
+  <span class="progress-step" data-step="5">5. Campsie Shops</span>
+  <span class="progress-step" data-step="6">6. Workshop</span>
+</div>
+
+<main>
+
+<!-- ============ INTRO ============ -->
+<section class="card" id="room0">
+  <span class="room-tag" style="background: var(--navy);">Mission Briefing</span>
+  <h2>Welcome, rescue team!</h2>
+  <div class="story">
+    Meet Sam. Sam arrived in Sydney two weeks ago and today is Sam's first day at TAFE.
+    But everything has gone wrong! Sam is locked out of the campus, the student ID is missing,
+    the share house key is lost, and a very important phone call is waiting.
+    Your team must help Sam escape six tricky situations using
+    everyday Australian English. Good luck!
+  </div>
+  <h3>How to play</h3>
+  <p>Work as a team of 3 or 4. In each room you must solve a puzzle <b>and</b> complete a speaking
+  task. Some doors need a code from your teacher, so you will need to speak up! You have three
+  hint buttons in each room, but each hint costs your team <b>2 minutes</b> of time.</p>
+  <div class="speak-task">
+    <span class="label">🗣️ Before you start: talk together</span>
+    Introduce yourselves to your team. Then agree on a team name and decide who will type.
+    Everyone must speak in every room. That is the deal!
+  </div>
+  <div class="lock-row">
+    <input type="text" id="teamName" placeholder="Team name" maxlength="24" style="letter-spacing: normal; text-transform: none; width: 240px;">
+    <button class="btn-amber" id="startBtn">Start the clock ⏱️</button>
+  </div>
+  <div class="feedback" id="fb0"></div>
+</section>
+
+<!-- ============ ROOM 1 ============ -->
+<section class="card hidden" id="room1">
+  <span class="room-tag">Room 1 of 6</span>
+  <h2>🚧 The Campus Gate</h2>
+  <div class="story">
+    Sam is stuck outside the TAFE gate. The security keypad needs a 4-digit code.
+    A friendly student says: "The code is hidden in the meanings. Match them all and you will see it!"
+  </div>
+  <div class="speak-task">
+    <span class="label">🗣️ Speaking task first (pairs, 3 minutes)</span>
+    Practise starting a conversation with a stranger, like Min did.
+    Partner A: "Hey! You look a bit lost. Are you new here?"
+    Partner B: reply, introduce yourself, and ask <b>two follow-up questions</b>.
+    Then swap roles. When both of you have practised, start the puzzle.
+  </div>
+  <h3>Puzzle: match each expression to its meaning</h3>
+  <p>Click an expression, then click its meaning. Four of the meanings are hiding a code digit!</p>
+  <div class="match-grid">
+    <div class="match-col" id="matchTerms"></div>
+    <div class="match-col" id="matchDefs"></div>
+  </div>
+  <h3>Enter the gate code</h3>
+  <p>Read the code digits <b>from top to bottom</b> on the meanings side.</p>
+  <div class="lock-row">
+    <input type="text" id="code1" placeholder="4 digits" maxlength="4" inputmode="numeric">
+    <button class="btn-primary" onclick="tryCode(1)">Unlock 🔓</button>
+    <button class="btn-hint" onclick="useHint(1)">💡 Hint (costs 2 min)</button>
+  </div>
+  <div class="feedback" id="fb1"></div>
+</section>
+
+<!-- ============ ROOM 2 ============ -->
+<section class="card hidden" id="room2">
+  <span class="room-tag">Room 2 of 6</span>
+  <h2>🪪 The Reception Desk</h2>
+  <div class="story">
+    Sam is inside, but there is a problem. This morning the receptionist walked away without helping,
+    and Sam still has no student ID. Sam must go back and speak up politely. That is not on!
+  </div>
+  <h3>Puzzle: build the polite conversation</h3>
+  <p>The conversation is mixed up. Click the lines <b>in the correct order</b> to build it.
+  If you click a wrong line, it will flash red. Think: how do we complain politely in Australia?</p>
+  <div class="dlg-built" id="dlgBuilt"></div>
+  <div class="dlg-pool" id="dlgPool"></div>
+  <div class="speak-task hidden" id="room2speak">
+    <span class="label">🗣️ Teacher checkpoint: roleplay (pairs)</span>
+    Well done! Now perform the conversation for your teacher <b>without reading every word</b>.
+    Student A is the receptionist. Student B is Sam. Use polite voices and body language.
+    Then swap. When your teacher is happy, they will give you the <b>secret code word</b>.
+  </div>
+  <div class="lock-row hidden" id="room2lock">
+    <input type="text" id="code2" placeholder="Code word" maxlength="12">
+    <button class="btn-primary" onclick="tryCode(2)">Unlock 🔓</button>
+    <button class="btn-hint" onclick="useHint(2)">💡 Hint (costs 2 min)</button>
+  </div>
+  <div class="feedback" id="fb2"></div>
+</section>
+
+<!-- ============ ROOM 3 ============ -->
+<section class="card hidden" id="room3">
+  <span class="room-tag">Room 3 of 6</span>
+  <h2>🏠 The Share House</h2>
+  <div class="story">
+    Sam finally gets home to the share house in Campsie, but the key is missing!
+    The housemates changed the smart lock and left a note:
+    "The password is what good housemates always stick... Complete our messages to find the letters."
+  </div>
+  <h3>Puzzle: complete the housemates' messages</h3>
+  <p>Choose the correct expression for each message. Every correct answer reveals a letter.
+  The letters spell the door password <b>in order, from message 1 to message 8</b>.</p>
+  <div class="wordbank" id="wordbank"></div>
+  <div id="gapList"></div>
+  <div class="speak-task">
+    <span class="label">🗣️ Speaking task (group, 4 minutes)</span>
+    While you work, take turns to answer out loud:
+    "Tell us about a time you had to <b>sort something out</b> in Australia.
+    What happened? Who helped you?" Everyone speaks for about one minute.
+  </div>
+  <h3>Enter the door password</h3>
+  <div class="lock-row">
+    <input type="text" id="code3" placeholder="Password" maxlength="10">
+    <button class="btn-primary" onclick="tryCode(3)">Unlock 🔓</button>
+    <button class="btn-hint" onclick="useHint(3)">💡 Hint (costs 2 min)</button>
+  </div>
+  <div class="feedback" id="fb3"></div>
+</section>
+
+<!-- ============ ROOM 4 ============ -->
+<section class="card hidden" id="room4">
+  <span class="room-tag">Room 4 of 6</span>
+  <h2>📞 The Phone Call</h2>
+  <div class="story">
+    Inside the house, Sam's phone rings. It is the TAFE service centre about tomorrow's important
+    appointment. But the phone battery is nearly dead, so only <b>one person</b> can hear the call.
+    The rest of the team must listen carefully and write down the details!
+  </div>
+  <div class="speak-task">
+    <span class="label">🗣️ Information gap: how it works</span>
+    <b>Choose one team member to be the caller.</b> Only the caller may read the blue card below.
+    The caller reads the message aloud <b>twice, at normal speed</b>. Everyone else looks away
+    from the screen and listens. Listeners can ask checking questions like
+    "Sorry, could you repeat that?" or "Was that Tuesday or Thursday?"
+    Then the listeners complete the form. The caller may not point or help!
+  </div>
+  <button class="btn-amber" id="revealCard" onclick="toggleAgentCard()">📇 Caller only: show the call card</button>
+  <div class="agent-card hidden" id="agentCard">
+    <h4>☎️ Call script (caller reads this aloud twice)</h4>
+    <p>"Hello, this is the TAFE service centre calling for Sam.
+    This is a reminder about your appointment. Your appointment is on <b>Tuesday</b> at
+    <b>quarter past nine in the morning</b>, at the <b>Bankstown</b> office.
+    Your reference number is <b>four, seven, two, six</b>.
+    Please bring your passport and your enrolment letter. Thank you, and see you then. Goodbye!"</p>
+  </div>
+  <h3>Listeners: complete the appointment form</h3>
+  <div class="form-grid">
+    <div class="form-field">
+      <label>Day of appointment</label>
+      <select id="f-day">
+        <option value="">Choose...</option>
+        <option>Monday</option><option>Tuesday</option><option>Thursday</option><option>Friday</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Time</label>
+      <select id="f-time">
+        <option value="">Choose...</option>
+        <option>8:45 am</option><option>9:15 am</option><option>9:45 am</option><option>10:15 am</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Office location</label>
+      <select id="f-office">
+        <option value="">Choose...</option>
+        <option>Campsie</option><option>St Leonards</option><option>Bankstown</option><option>Ultimo</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Reference number (4 digits)</label>
+      <input type="text" id="f-ref" maxlength="4" inputmode="numeric" placeholder="____">
+    </div>
+  </div>
+  <div class="lock-row">
+    <button class="btn-primary" onclick="checkForm()">Submit the form 📋</button>
+    <button class="btn-hint" onclick="useHint(4)">💡 Hint (costs 2 min)</button>
+  </div>
+  <div class="feedback" id="fb4"></div>
+</section>
+
+<!-- ============ ROOM 5 ============ -->
+<section class="card hidden" id="room5">
+  <span class="room-tag">Room 5 of 6</span>
+  <h2>🛍️ Campsie Shops</h2>
+  <div class="story">
+    Appointment sorted! Now Sam heads to the Campsie shops to buy dinner and meet a friend.
+    But five tricky situations are waiting. Find all five glowing spots in the street,
+    choose the best response, and collect five tokens to unlock the last door.
+  </div>
+  <div class="speak-task">
+    <span class="label">🗣️ Say it out loud!</span>
+    When your team chooses a response, <b>one person must say it aloud with feeling</b>,
+    like a real Aussie would. Take turns. Your teammates give a thumbs up if it sounds natural.
+  </div>
+  <div class="scene-wrap">
+    <svg viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Campsie shopping street scene">
+      <rect x="0" y="0" width="800" height="300" fill="#bcdcf5"/>
+      <circle cx="700" cy="60" r="34" fill="#f7d154"/>
+      <rect x="0" y="300" width="800" height="120" fill="#8f9aa8"/>
+      <rect x="0" y="300" width="800" height="12" fill="#6d7684"/>
+      <line x1="40" y1="360" x2="140" y2="360" stroke="#fff" stroke-width="6" stroke-dasharray="30 26"/>
+      <line x1="220" y1="360" x2="760" y2="360" stroke="#fff" stroke-width="6" stroke-dasharray="30 26"/>
+      <!-- Cafe -->
+      <rect x="20" y="130" width="180" height="170" fill="#1f3864"/>
+      <rect x="30" y="150" width="160" height="36" fill="#f0a500"/>
+      <text x="110" y="176" text-anchor="middle" font-size="22" font-weight="bold" fill="#1f3864" font-family="Calibri, Arial">CAFE</text>
+      <rect x="42" y="205" width="60" height="70" fill="#e2f2f2"/>
+      <rect x="118" y="205" width="60" height="95" fill="#5b4632"/>
+      <circle cx="130" cy="252" r="4" fill="#f0a500"/>
+      <!-- Chemist -->
+      <rect x="220" y="120" width="180" height="180" fill="#17868a"/>
+      <rect x="230" y="140" width="160" height="36" fill="#fff"/>
+      <text x="310" y="166" text-anchor="middle" font-size="20" font-weight="bold" fill="#17868a" font-family="Calibri, Arial">CHEMIST</text>
+      <rect x="242" y="195" width="55" height="80" fill="#e2f2f2"/>
+      <rect x="308" y="195" width="70" height="105" fill="#0f5f62"/>
+      <text x="343" y="245" text-anchor="middle" font-size="34" fill="#fff" font-family="Calibri, Arial">+</text>
+      <!-- Grocer -->
+      <rect x="420" y="135" width="180" height="165" fill="#2e7d32"/>
+      <rect x="430" y="155" width="160" height="36" fill="#fdf1d6"/>
+      <text x="510" y="181" text-anchor="middle" font-size="19" font-weight="bold" fill="#2e7d32" font-family="Calibri, Arial">GROCER</text>
+      <rect x="438" y="210" width="145" height="50" fill="#fdf1d6"/>
+      <circle cx="460" cy="235" r="12" fill="#e53935"/>
+      <circle cx="490" cy="235" r="12" fill="#f0a500"/>
+      <circle cx="520" cy="235" r="12" fill="#7cb342"/>
+      <circle cx="550" cy="235" r="12" fill="#e53935"/>
+      <!-- Bus stop -->
+      <rect x="640" y="170" width="130" height="130" fill="#5c6b80"/>
+      <rect x="650" y="185" width="110" height="30" fill="#f0a500"/>
+      <text x="705" y="207" text-anchor="middle" font-size="17" font-weight="bold" fill="#1f3864" font-family="Calibri, Arial">BUS STOP</text>
+      <rect x="656" y="228" width="98" height="46" fill="#cfd8e3"/>
+      <!-- People -->
+      <circle cx="612" cy="330" r="12" fill="#e8b88a"/><rect x="602" y="342" width="20" height="34" rx="6" fill="#c62828"/>
+      <circle cx="648" cy="332" r="12" fill="#a9744f"/><rect x="638" y="344" width="20" height="34" rx="6" fill="#1f3864"/>
+      <circle cx="180" cy="332" r="12" fill="#8d5a3a"/><rect x="170" y="344" width="20" height="34" rx="6" fill="#17868a"/>
+      <rect x="196" y="352" width="16" height="18" rx="3" fill="#f0a500"/>
+      <!-- Hotspots -->
+      <g class="hotspot" id="hs1" onclick="openSpot(1)"><circle cx="110" cy="250" r="20"/><text x="110" y="257" text-anchor="middle">1</text></g>
+      <g class="hotspot" id="hs2" onclick="openSpot(2)"><circle cx="270" cy="250" r="20"/><text x="270" y="257" text-anchor="middle">2</text></g>
+      <g class="hotspot" id="hs3" onclick="openSpot(3)"><circle cx="510" cy="235" r="20"/><text x="510" y="242" text-anchor="middle">3</text></g>
+      <g class="hotspot" id="hs4" onclick="openSpot(4)"><circle cx="705" cy="250" r="20"/><text x="705" y="257" text-anchor="middle">4</text></g>
+      <g class="hotspot" id="hs5" onclick="openSpot(5)"><circle cx="180" cy="315" r="20"/><text x="180" y="322" text-anchor="middle">5</text></g>
+    </svg>
+  </div>
+  <div class="token-row" id="tokenRow">
+    <div class="token" id="tk1">1</div><div class="token" id="tk2">2</div><div class="token" id="tk3">3</div>
+    <div class="token" id="tk4">4</div><div class="token" id="tk5">5</div>
+  </div>
+  <div class="feedback" id="fb5"></div>
+</section>
+
+<!-- ============ ROOM 6 ============ -->
+<section class="card hidden" id="room6">
+  <span class="room-tag">Room 6 of 6</span>
+  <h2>🎤 The Job-Readiness Workshop</h2>
+  <div class="story">
+    Sam's friend takes the team to a free job-readiness workshop at Campsie Library.
+    There is one final locked door: the workshop stage. The presenter says:
+    "You can only leave when you show us what you have learned. Perform, and the door opens!"
+  </div>
+  <h3>Final challenge: create and perform a conversation</h3>
+  <p>As a team, write and perform a conversation of <b>2 to 3 minutes</b>. Imagine two new
+  students meeting at TAFE, like Min and Wei. Your conversation must include:</p>
+  <ul style="margin: 10px 0 10px 24px;">
+    <li>at least <b>6 expressions</b> from today (tick them below as you plan)</li>
+    <li>a friendly <b>opening</b> and a clear <b>closing</b> with a plan to meet again</li>
+    <li>at least one moment of <b>empathy</b> ("I know that feeling", "I totally get that")</li>
+    <li>one <b>checking question</b> ("Are you pulling my leg?", "Is that actually true?")</li>
+  </ul>
+  <h3>Plan your expressions (tick at least 6)</h3>
+  <div class="check-grid" id="checkGrid"></div>
+  <div class="feedback" id="checkCount">0 of 6 minimum ticked</div>
+  <div class="speak-task">
+    <span class="label">🗣️ Teacher checkpoint: the performance</span>
+    Practise your conversation twice, then perform it for your teacher (or the whole class).
+    Every team member must speak. When your teacher is happy, they will give you the
+    <b>master code</b> to open the final door.
+  </div>
+  <div class="lock-row">
+    <input type="text" id="code6" placeholder="Master code" maxlength="12">
+    <button class="btn-primary" onclick="tryCode(6)">Open the final door 🚪</button>
+  </div>
+  <div class="feedback" id="fb6"></div>
+</section>
+
+<!-- ============ VICTORY ============ -->
+<section class="card hidden" id="roomV" style="border-top-color: var(--amber);">
+  <div class="victory">
+    <h2>🎉 YOU ESCAPED! 🎉</h2>
+    <p id="victoryTeam" style="font-size: 1.3rem;"></p>
+    <div class="bigtime" id="victoryTime"></div>
+    <p>Sam has an ID, a house key, an appointment, dinner, and a new group of friends.
+    You are all legends!</p>
+    <div class="debrief">
+      <h3 style="color: var(--amber);">Team debrief: talk about these together</h3>
+      <ol>
+        <li>Which expression will you use this week? Say it in your own sentence.</li>
+        <li>Which room was the hardest for your team? Why?</li>
+        <li>When is it okay to say "That's not on" in real life? Give an example.</li>
+        <li>What will you do next time someone does not help you at a service desk?</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<button class="phrasebook-btn hidden" id="pbBtn" onclick="togglePB()">📖 Phrasebook</button>
+<div class="modal-bg hidden" id="pbModal">
+  <div class="modal">
+    <h3>📖 Team Phrasebook</h3>
+    <div id="pbList"></div>
+    <button class="btn-primary" style="margin-top: 14px;" onclick="togglePB()">Close</button>
+  </div>
+</div>
+
+<div class="modal-bg hidden" id="mcqModal">
+  <div class="modal">
+    <h3 id="mcqTitle"></h3>
+    <p id="mcqSituation" style="margin-bottom: 8px;"></p>
+    <div id="mcqOpts"></div>
+    <div class="feedback" id="mcqFb"></div>
+    <button class="btn-ghost" style="margin-top: 10px;" onclick="closeMcq()">Close</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ================= STATE ================= */
+let totalSeconds = 120 * 60;
+let timerInterval = null;
+let started = false;
+let currentRoom = 0;
+const hintsUsed = { 1: 0, 2: 0, 3: 0, 4: 0 };
+
+/* ================= CODES (teachers: see the instructions document) ================= */
+const CODES = {
+  1: "7392",
+  2: "SPEAKUP",       /* teacher gives this after the Room 2 roleplay */
+  3: "TOGETHER",
+  6: "LEGEND"          /* teacher gives this after the final performance */
+};
+
+/* ================= TIMER ================= */
+function fmt(s) {
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return h + ":" + String(m).padStart(2, "0") + ":" + String(sec).padStart(2, "0");
+}
+function tick() {
+  totalSeconds--;
+  const t = document.getElementById("timer");
+  t.textContent = fmt(Math.max(totalSeconds, 0));
+  if (totalSeconds <= 600) t.classList.add("warning");
+  if (totalSeconds <= 0) {
+    clearInterval(timerInterval);
+    t.textContent = "0:00:00";
+  }
+}
+function loseMinutes(mins) {
+  totalSeconds = Math.max(totalSeconds - mins * 60, 0);
+  document.getElementById("timer").textContent = fmt(totalSeconds);
+}
+
+/* ================= NAVIGATION ================= */
+function setProgress(step) {
+  document.querySelectorAll(".progress-step").forEach(function (el) {
+    const s = Number(el.dataset.step);
+    el.classList.remove("active", "done");
+    if (s < step) el.classList.add("done");
+    if (s === step) el.classList.add("active");
+  });
+}
+function goToRoom(n) {
+  document.getElementById("room" + currentRoom).classList.add("hidden");
+  currentRoom = n;
+  document.getElementById("room" + n).classList.remove("hidden");
+  setProgress(n);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+setProgress(0);
+
+document.getElementById("startBtn").addEventListener("click", function () {
+  const name = document.getElementById("teamName").value.trim();
+  if (!name) {
+    document.getElementById("fb0").textContent = "Choose a team name first!";
+    document.getElementById("fb0").className = "feedback bad";
+    return;
+  }
+  document.getElementById("teamLabel").textContent = "Team: " + name;
+  started = true;
+  timerInterval = setInterval(tick, 1000);
+  document.getElementById("pbBtn").classList.remove("hidden");
+  goToRoom(1);
+});
+
+/* ================= CODE LOCKS ================= */
+function tryCode(room) {
+  const input = document.getElementById("code" + room);
+  const val = input.value.trim().toUpperCase().replace(/\s+/g, "");
+  const fb = document.getElementById("fb" + room);
+  if (val === CODES[room]) {
+    fb.textContent = "✅ Unlocked! Well done, team!";
+    fb.className = "feedback good";
+    setTimeout(function () {
+      if (room === 6) { showVictory(); } else { goToRoom(room + 1); }
+    }, 1200);
+  } else {
+    fb.textContent = "❌ That is not it. Check again and try once more.";
+    fb.className = "feedback bad";
+    input.classList.add("shake");
+    setTimeout(function () { input.classList.remove("shake"); }, 500);
+  }
+}
+
+/* ================= HINTS ================= */
+const HINTS = {
+  1: [
+    "Hint 1: 'crook' is about your health, and 'bludge' is about avoiding work.",
+    "Hint 2: only four meanings show a gold digit after you match them.",
+    "Hint 3: read the gold digits from the TOP meaning to the BOTTOM meaning."
+  ],
+  2: [
+    "Hint 1: the receptionist speaks second, not first.",
+    "Hint 2: explain the problem BEFORE you say what you need.",
+    "Hint 3: the last line is friendly and tells Sam what happens next."
+  ],
+  3: [
+    "Hint 1: message 4 is a checking question. Is your friend joking?",
+    "Hint 2: 'take the piss' is about being unfair to someone.",
+    "Hint 3: the password is something good housemates and classmates stick..."
+  ],
+  4: [
+    "Hint 1: listeners can ask the caller to repeat the message.",
+    "Hint 2: 'quarter past nine' means 15 minutes after 9 o'clock.",
+    "Hint 3: the reference number is read one digit at a time."
+  ]
+};
+function useHint(room) {
+  const used = hintsUsed[room];
+  if (used >= 3) {
+    const fb = document.getElementById("fb" + room);
+    fb.textContent = "No more hints in this room!";
+    fb.className = "feedback bad";
+    return;
+  }
+  hintsUsed[room]++;
+  loseMinutes(2);
+  const fb = document.getElementById("fb" + room);
+  fb.textContent = "💡 " + HINTS[room][used] + "  (2 minutes lost)";
+  fb.className = "feedback";
+  fb.style.color = "#9a6b00";
+}
+
+/* ================= ROOM 1: MATCHING ================= */
+const PAIRS = [
+  { term: "get the hang of it", def: "learn how to do something new", digit: "7" },
+  { term: "dodgy", def: "suspicious, not safe or not reliable", digit: null },
+  { term: "keen", def: "very eager and enthusiastic", digit: null },
+  { term: "not on", def: "not acceptable, not okay", digit: null },
+  { term: "sort it out", def: "fix or solve a problem", digit: "3" },
+  { term: "my bad", def: "my mistake, sorry", digit: null },
+  { term: "feel crook", def: "feel sick or unwell", digit: "9" },
+  { term: "a bit full on", def: "very intense, a lot to handle", digit: null },
+  { term: "bludge", def: "be lazy and avoid doing your share", digit: null },
+  { term: "fair enough", def: "that seems reasonable, I accept that", digit: "2" }
+];
+let selTerm = null;
+let matchedCount = 0;
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+function buildMatch() {
+  const termCol = document.getElementById("matchTerms");
+  const defCol = document.getElementById("matchDefs");
+  shuffle(PAIRS).forEach(function (p) {
+    const b = document.createElement("button");
+    b.className = "match-item";
+    b.textContent = p.term;
+    b.dataset.term = p.term;
+    b.onclick = function () { pickTerm(b); };
+    termCol.appendChild(b);
+  });
+  /* definition order is fixed so the code digits always read 7-3-9-2 from top to bottom */
+  const fixedOrder = [0, 5, 2, 4, 1, 8, 6, 3, 9, 7];
+  fixedOrder.forEach(function (i) {
+    const p = PAIRS[i];
+    const b = document.createElement("button");
+    b.className = "match-item";
+    b.textContent = p.def;
+    b.dataset.term = p.term;
+    b.dataset.digit = p.digit || "";
+    b.onclick = function () { pickDef(b); };
+    defCol.appendChild(b);
+  });
+}
+function pickTerm(btn) {
+  if (btn.classList.contains("matched")) return;
+  document.querySelectorAll("#matchTerms .match-item").forEach(function (el) { el.classList.remove("selected"); });
+  btn.classList.add("selected");
+  selTerm = btn;
+}
+function pickDef(btn) {
+  if (btn.classList.contains("matched") || !selTerm) return;
+  if (btn.dataset.term === selTerm.dataset.term) {
+    btn.classList.add("matched");
+    selTerm.classList.add("matched");
+    selTerm.classList.remove("selected");
+    if (btn.dataset.digit) {
+      const sp = document.createElement("span");
+      sp.className = "digit";
+      sp.textContent = btn.dataset.digit;
+      btn.appendChild(sp);
+    }
+    selTerm = null;
+    matchedCount++;
+    if (matchedCount === PAIRS.length) {
+      const fb = document.getElementById("fb1");
+      fb.textContent = "All matched! Now read the gold digits from top to bottom.";
+      fb.className = "feedback good";
+    }
+  } else {
+    btn.classList.add("wrongflash");
+    setTimeout(function () { btn.classList.remove("wrongflash"); }, 500);
+  }
+}
+buildMatch();
+
+/* ================= ROOM 2: DIALOGUE ORDER ================= */
+const DIALOGUE = [
+  "Sam: Excuse me, could I speak to someone please?",
+  "Receptionist: Hi, of course. How can I help you?",
+  "Sam: I came in this morning to get my student ID, but I did not get any help.",
+  "Receptionist: Oh, I am sorry to hear that. That is not on.",
+  "Sam: It is okay, but I really need to sort it out today. I cannot use the library without it.",
+  "Receptionist: Fair enough. Let me call the manager for you now.",
+  "Sam: Thank you so much. I really appreciate it.",
+  "Receptionist: No worries. Take a seat and someone will be with you in a minute."
+];
+let dlgNext = 0;
+function buildDialogue() {
+  const pool = document.getElementById("dlgPool");
+  const order = [3, 6, 0, 5, 1, 7, 2, 4]; /* fixed scramble */
+  order.forEach(function (i) {
+    const d = document.createElement("div");
+    d.className = "dlg-line";
+    d.textContent = DIALOGUE[i];
+    d.dataset.idx = i;
+    d.onclick = function () { pickLine(d); };
+    pool.appendChild(d);
+  });
+}
+function pickLine(el) {
+  const idx = Number(el.dataset.idx);
+  if (idx === dlgNext) {
+    el.onclick = null;
+    el.remove();
+    const built = document.getElementById("dlgBuilt");
+    const d = document.createElement("div");
+    d.className = "dlg-line";
+    d.innerHTML = '<span class="num">' + (dlgNext + 1) + "</span>" + DIALOGUE[idx];
+    built.appendChild(d);
+    dlgNext++;
+    if (dlgNext === DIALOGUE.length) {
+      document.getElementById("room2speak").classList.remove("hidden");
+      document.getElementById("room2lock").classList.remove("hidden");
+      const fb = document.getElementById("fb2");
+      fb.textContent = "Perfect order! Now roleplay it for your teacher to get the code word.";
+      fb.className = "feedback good";
+    }
+  } else {
+    el.classList.add("shake");
+    el.style.background = "var(--bad-light)";
+    setTimeout(function () {
+      el.classList.remove("shake");
+      el.style.background = "";
+    }, 500);
+  }
+}
+buildDialogue();
+
+/* ================= ROOM 3: GAP FILL ================= */
+const GAPS = [
+  { pre: "1. Hey Sam! How are you ", post: " after your first big week?", ans: "holding up", letter: "T" },
+  { pre: "2. I am ", post: " nervous about meeting the landlord tonight.", ans: "low-key", letter: "O" },
+  { pre: "3. What are you ", post: " outside of study? We love cooking shows here.", ans: "into", letter: "G" },
+  { pre: "4. Rent is only fifty dollars a week? Are you ", post: "?", ans: "pulling my leg", letter: "E" },
+  { pre: "5. Sorry I broke your favourite mug. I will ", post: ", I promise.", ans: "make it up to you", letter: "T" },
+  { pre: "6. He never cleans the kitchen. He thinks he can ", post: " and get away with it.", ans: "take the piss", letter: "H" },
+  { pre: "7. I was really upset, but I told myself to ", post: " and keep going.", ans: "pull yourself together", letter: "E" },
+  { pre: "8. They already drove me to the airport, so I will not ", post: " and ask for more.", ans: "push my luck", letter: "R" }
+];
+const BANK = ["pull yourself together", "into", "take the piss", "low-key", "push my luck", "holding up", "make it up to you", "pulling my leg"];
+
+function buildGaps() {
+  const bankDiv = document.getElementById("wordbank");
+  BANK.forEach(function (w) {
+    const chip = document.createElement("span");
+    chip.className = "bank-chip";
+    chip.textContent = w;
+    chip.id = "chip-" + w.replace(/\s+/g, "-");
+    bankDiv.appendChild(chip);
+  });
+  const list = document.getElementById("gapList");
+  GAPS.forEach(function (g, i) {
+    const item = document.createElement("div");
+    item.className = "gap-item";
+    item.id = "gap" + i;
+    const sel = document.createElement("select");
+    sel.innerHTML = '<option value="">choose...</option>' +
+      shuffle(BANK).map(function (w) { return "<option>" + w + "</option>"; }).join("");
+    sel.onchange = function () { checkGap(i, sel, item); };
+    item.appendChild(document.createTextNode(g.pre));
+    item.appendChild(sel);
+    item.appendChild(document.createTextNode(g.post));
+    list.appendChild(item);
+  });
+}
+function checkGap(i, sel, item) {
+  if (item.classList.contains("correct")) return;
+  if (sel.value === GAPS[i].ans) {
+    item.classList.add("correct");
+    sel.disabled = true;
+    const lr = document.createElement("span");
+    lr.className = "letter-reveal";
+    lr.textContent = GAPS[i].letter;
+    item.appendChild(lr);
+    const chip = document.getElementById("chip-" + GAPS[i].ans.replace(/\s+/g, "-"));
+    if (chip) chip.classList.add("used");
+  } else {
+    item.classList.add("shake");
+    setTimeout(function () { item.classList.remove("shake"); }, 500);
+  }
+}
+buildGaps();
+
+/* ================= ROOM 4: FORM ================= */
+function toggleAgentCard() {
+  document.getElementById("agentCard").classList.toggle("hidden");
+}
+function checkForm() {
+  const day = document.getElementById("f-day").value;
+  const time = document.getElementById("f-time").value;
+  const office = document.getElementById("f-office").value;
+  const ref = document.getElementById("f-ref").value.trim();
+  const fb = document.getElementById("fb4");
+  if (day === "Tuesday" && time === "9:15 am" && office === "Bankstown" && ref === "4726") {
+    fb.textContent = "✅ Form complete! Appointment saved. The door is opening...";
+    fb.className = "feedback good";
+    setTimeout(function () { goToRoom(5); }, 1400);
+  } else {
+    fb.textContent = "❌ Something on the form is wrong. Ask the caller to read the message again!";
+    fb.className = "feedback bad";
+  }
+}
+
+/* ================= ROOM 5: HOTSPOTS ================= */
+const SPOTS = {
+  1: {
+    title: "☕ At the cafe",
+    situation: "The barista says: 'Here you go, and I popped in a free biscuit for you, since you are new around here!' What is the best response?",
+    opts: ["You're a legend! Thanks so much.", "My bad. I did not order that.", "That's not on. Take it back."],
+    correct: 0,
+    why: "'You're a legend' is a warm, friendly way to thank someone in Australia."
+  },
+  2: {
+    title: "💊 At the chemist",
+    situation: "You turn around quickly and bump into someone's basket. Everything falls on the floor. What do you say?",
+    opts: ["Fair enough!", "My bad! Sorry about that. Let me help you.", "How are you holding up?"],
+    correct: 1,
+    why: "'My bad' is a casual, friendly way to say the mistake was yours."
+  },
+  3: {
+    title: "🍉 At the grocer",
+    situation: "Melons cost fifteen dollars each! The grocer explains: 'Sorry mate, the floods up north pushed the prices up this month.' What is the best response?",
+    opts: ["Are you pulling my leg?", "Fair enough. I will grab some apples instead.", "Pull yourself together."],
+    correct: 1,
+    why: "'Fair enough' shows you accept the explanation, even if you are not thrilled."
+  },
+  4: {
+    title: "🚌 At the bus stop",
+    situation: "You have waited fifteen minutes in the queue. A man walks straight to the front and pushes in. What do you say to your friend?",
+    opts: ["That's the way!", "I'm keen!", "That's not on. He just pushed in!"],
+    correct: 2,
+    why: "'That's not on' means the behaviour is not acceptable."
+  },
+  5: {
+    title: "🛍️ Outside the shops",
+    situation: "Your friend is carrying heavy bags, looks exhausted, and says the week has been a bit full on. What do you say?",
+    opts: ["How are you holding up? Let me take a bag.", "Don't bludge!", "You look dodgy."],
+    correct: 0,
+    why: "'How are you holding up?' shows empathy when someone is having a hard time."
+  }
+};
+let tokensEarned = 0;
+let activeSpot = null;
+
+function openSpot(n) {
+  if (document.getElementById("hs" + n).classList.contains("found")) return;
+  activeSpot = n;
+  const s = SPOTS[n];
+  document.getElementById("mcqTitle").textContent = s.title;
+  document.getElementById("mcqSituation").textContent = s.situation;
+  const opts = document.getElementById("mcqOpts");
+  opts.innerHTML = "";
+  document.getElementById("mcqFb").textContent = "";
+  s.opts.forEach(function (o, i) {
+    const b = document.createElement("button");
+    b.className = "mcq-opt";
+    b.textContent = o;
+    b.onclick = function () { answerSpot(i, b); };
+    opts.appendChild(b);
+  });
+  document.getElementById("mcqModal").classList.remove("hidden");
+}
+function answerSpot(i, btn) {
+  const s = SPOTS[activeSpot];
+  const fb = document.getElementById("mcqFb");
+  if (i === s.correct) {
+    btn.classList.add("right");
+    fb.textContent = "✅ " + s.why + " Now say it aloud with feeling!";
+    fb.className = "feedback good";
+    document.querySelectorAll("#mcqOpts .mcq-opt").forEach(function (el) { el.onclick = null; });
+    document.getElementById("hs" + activeSpot).classList.add("found");
+    document.getElementById("tk" + activeSpot).classList.add("earned");
+    tokensEarned++;
+    if (tokensEarned === 5) {
+      setTimeout(function () {
+        closeMcq();
+        const f5 = document.getElementById("fb5");
+        f5.textContent = "✅ Five tokens! The last door is opening...";
+        f5.className = "feedback good";
+        setTimeout(function () { goToRoom(6); }, 1400);
+      }, 1600);
+    }
+  } else {
+    btn.classList.add("wrong");
+    fb.textContent = "❌ Hmm, that would sound strange here. Try another one.";
+    fb.className = "feedback bad";
+  }
+}
+function closeMcq() {
+  document.getElementById("mcqModal").classList.add("hidden");
+}
+
+/* ================= ROOM 6: CHECKLIST ================= */
+const ALL_EXPRESSIONS = [
+  "get the hang of it", "dodgy", "keen", "low-key", "into (interested in)",
+  "that's not on", "sort it out", "my bad", "take the piss", "pulling my leg",
+  "how are you holding up", "feel crook", "a bit full on", "pull yourself together",
+  "bludge", "fair enough", "that's the way", "make it up to you", "push my luck", "you're a legend"
+];
+function buildChecklist() {
+  const grid = document.getElementById("checkGrid");
+  ALL_EXPRESSIONS.forEach(function (e) {
+    const label = document.createElement("label");
+    label.className = "check-item";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.onchange = updateCheckCount;
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(e));
+    grid.appendChild(label);
+  });
+}
+function updateCheckCount() {
+  const n = document.querySelectorAll("#checkGrid input:checked").length;
+  const el = document.getElementById("checkCount");
+  el.textContent = n + " of 6 minimum ticked";
+  el.className = n >= 6 ? "feedback good" : "feedback";
+}
+buildChecklist();
+
+/* ================= PHRASEBOOK ================= */
+const PB = [
+  ["get the hang of it", "learn how to do something new"],
+  ["dodgy", "suspicious, not safe or reliable"],
+  ["keen", "eager, enthusiastic"],
+  ["low-key", "a little bit, quietly"],
+  ["into something", "interested in something"],
+  ["that's not on", "that is not acceptable"],
+  ["sort it out", "fix or solve a problem"],
+  ["my bad", "my mistake, sorry"],
+  ["take the piss", "treat someone unfairly, or make fun of them"],
+  ["are you pulling my leg?", "are you joking?"],
+  ["how are you holding up?", "how are you coping?"],
+  ["feel crook", "feel sick"],
+  ["a bit full on", "intense, a lot to handle"],
+  ["pull yourself together", "calm down and get control of yourself"],
+  ["bludge", "be lazy, avoid your share of the work"],
+  ["fair enough", "that seems reasonable"],
+  ["that's the way", "well done, that is the right attitude"],
+  ["make it up to you", "do something nice to say sorry"],
+  ["push my luck", "ask for too much"],
+  ["you're a legend", "you are a great person, thank you"]
+];
+(function () {
+  const list = document.getElementById("pbList");
+  PB.forEach(function (p) {
+    const d = document.createElement("div");
+    d.className = "phrase-row";
+    d.innerHTML = "<b>" + p[0] + "</b> = " + p[1];
+    list.appendChild(d);
+  });
+})();
+function togglePB() {
+  document.getElementById("pbModal").classList.toggle("hidden");
+}
+
+/* ================= VICTORY ================= */
+function showVictory() {
+  clearInterval(timerInterval);
+  document.getElementById("room6").classList.add("hidden");
+  document.getElementById("roomV").classList.remove("hidden");
+  setProgress(7);
+  const used = 120 * 60 - totalSeconds;
+  document.getElementById("victoryTeam").textContent =
+    document.getElementById("teamLabel").textContent + " escaped with " + fmt(Math.max(totalSeconds, 0)) + " remaining!";
+  document.getElementById("victoryTime").textContent = "⏱️ Escape time: " + fmt(used);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+</script>
+</body>
+</html>
